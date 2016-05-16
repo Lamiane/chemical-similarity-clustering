@@ -1,5 +1,5 @@
 """
-Loading the dataset
+Set of functions for loading the dataset.
 """
 
 import bidict
@@ -78,17 +78,20 @@ def get_all_files(path):
             if os.path.isfile(os.path.join(path, filename))]
 
 
-def load_similarity_matrices(all_compunds_file, folder_with_pairs):
+def load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_with_pairs):
     """
     Loading similarity matrices
 
     Parameters
     ----------
-    all_compunds_file: str
+    similarity_matrix_file: str
+        Path to file containing similarity matrix
+
+    all_compounds_file: str
         Path to file with all compounds
 
     folder_with_pairs: str
-        {ath to folder with files describing pairs
+        Path to folder with files describing pairs
 
     Returns
     -------
@@ -102,14 +105,13 @@ def load_similarity_matrices(all_compunds_file, folder_with_pairs):
 
     mapping_idx_chembl : bidict
         Bidirectional map CHMEBL-index
-
     """
     bin_similarity = []
     scale_similarity = []
     row_ind = []
     col_ind = []
 
-    mapping_idx_chembl = get_mapping(all_compunds_file)
+    mapping_idx_chembl = get_mapping(all_compounds_file)
     n_compunds = len(mapping_idx_chembl)
     dict_idx_chemblchembl = dict([[int(''.join(c for c in filename if c.isdigit())), tuple(get_chembls(filename))]
                                   for filename in get_all_files(folder_with_pairs)])
@@ -141,7 +143,7 @@ def load_similarity_matrices(all_compunds_file, folder_with_pairs):
     ###################
 
     n_omitted = 0
-    with open('Similarity.csv', 'r') as csvfile:
+    with open(similarity_matrix_file, 'r') as csvfile:
         for pair_number, bin_sim, scale_sim in csv.reader(csvfile, delimiter=','):
             if int(pair_number) not in pairs_to_omit:
                 chembl_i, chembl_j = dict_idx_chemblchembl[int(pair_number)]
@@ -187,7 +189,8 @@ def load_similarity_matrices(all_compunds_file, folder_with_pairs):
 
 
 if __name__ == '__main__':
-    bin_sim, scale_sim, mapping_idx_chembl = load_similarity_matrices('Random_compounds_100.sdf', 'pairs')
+    bin_sim, scale_sim, mapping_idx_chembl = \
+        load_similarity_matrices('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
     print 'bin_sim\n', bin_sim
     print '\nscale_sim\n', scale_sim
     print '\nmapping_idx_chembl\n', mapping_idx_chembl
