@@ -27,7 +27,6 @@ def get_mapping(all_compounds_file):
     mapping = bidict.bidict()
     all_chembls = get_chembls(all_compounds_file)
     mapping.update(dict(zip(xrange(len(all_chembls)), all_chembls)))
-
     return mapping
 
 
