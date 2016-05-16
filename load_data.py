@@ -1,3 +1,7 @@
+"""
+Loading the dataset
+"""
+
 import bidict
 import os
 import csv
@@ -8,6 +12,19 @@ import matplotlib.pyplot as plt
 
 
 def get_chembls(filename):
+    """
+    Extracting CHEMBLs from sdf file
+
+    Parameters
+    ----------
+    filename: str
+        Name of the sdf file
+
+    Returns
+    -------
+    result : list
+        Returns list containing all CHEMBLs as strings.
+    """
     result = []
     first_line = True
     with open(filename, 'r') as f:
@@ -24,6 +41,19 @@ def get_chembls(filename):
 
 
 def get_mapping(all_compounds_file):
+    """
+    Mapping CHEMBLs to integers so that they can be used as indices of an array
+
+    Parameters
+    ----------
+    all_compounds_file: str
+        Name of file containing all compounds
+
+    Returns
+    -------
+    mapping : bidict
+        Returns bidirectional map CHMEBL-index
+    """
     mapping = bidict.bidict()
     all_chembls = get_chembls(all_compounds_file)
     mapping.update(dict(zip(xrange(len(all_chembls)), all_chembls)))
@@ -31,11 +61,49 @@ def get_mapping(all_compounds_file):
 
 
 def get_all_files(path):
+    """
+    List all files in the directory
+
+    Parameters
+    ----------
+    path: str
+        path to directory in which function will look for files
+
+    Returns
+    -------
+    : list
+        Returns list containing paths to all files
+    """
     return [os.path.join(path, filename) for filename in os.listdir(path)
             if os.path.isfile(os.path.join(path, filename))]
 
 
 def load_similarity_matrices(all_compunds_file, folder_with_pairs):
+    """
+    Loading similarity matrices
+
+    Parameters
+    ----------
+    all_compunds_file: str
+        Path to file with all compounds
+
+    folder_with_pairs: str
+        {ath to folder with files describing pairs
+
+    Returns
+    -------
+    tuple containing:
+
+    bin_similarity : scipy.sparse.csr_matrix
+        Sparse matrix with binary score (-1 not similar, 1 similar)
+
+    scale_similarity : scipy.sparse.csr_matrix
+        Sparse matrix with similarity score in scale 1 (not similar) to 5 (similar)
+
+    mapping_idx_chembl : bidict
+        Bidirectional map CHMEBL-index
+
+    """
     bin_similarity = []
     scale_similarity = []
     row_ind = []
@@ -43,13 +111,13 @@ def load_similarity_matrices(all_compunds_file, folder_with_pairs):
 
     mapping_idx_chembl = get_mapping(all_compunds_file)
     n_compunds = len(mapping_idx_chembl)
-    dict_idx_chemblchembl = \
-    dict([[int(''.join(c for c in filename if c.isdigit())), tuple(get_chembls(filename))]
-          for filename in get_all_files(folder_with_pairs)])
+    dict_idx_chemblchembl = dict([[int(''.join(c for c in filename if c.isdigit())), tuple(get_chembls(filename))]
+                                  for filename in get_all_files(folder_with_pairs)])
 
-    ###################################
-    # # # zapewnij unikalnosc par # # #
-    ###################################
+    #######################################
+    # # # ensure all pairs are unique # # #
+    #######################################
+    # TODO: now repeats are removed but maybe an average score should be derived?
     non_unique = {}
     for key in sorted(dict_idx_chemblchembl.keys()):
         chembl_i, chembl_j = dict_idx_chemblchembl[key]
@@ -68,9 +136,9 @@ def load_similarity_matrices(all_compunds_file, folder_with_pairs):
     pairs_to_omit = set([item for sublist in non_unique.values() for item in sublist])
 
     print len(pairs_to_omit), 'pairs were omitted'
-    ######################
-    # # # zapewniono # # #
-    ######################
+    ###################
+    # # # ensured # # #
+    ###################
 
     n_omitted = 0
     with open('Similarity.csv', 'r') as csvfile:
@@ -116,3 +184,10 @@ def load_similarity_matrices(all_compunds_file, folder_with_pairs):
     assert np.all(scale_similarity.nonzero()[1] == bin_similarity.nonzero()[1])
 
     return bin_similarity, scale_similarity, mapping_idx_chembl
+
+
+if __name__ == '__main__':
+    bin_sim, scale_sim, mapping_idx_chembl = load_similarity_matrices('Random_compounds_100.sdf', 'pairs')
+    print 'bin_sim\n', bin_sim
+    print '\nscale_sim\n', scale_sim
+    print '\nmapping_idx_chembl\n', mapping_idx_chembl
