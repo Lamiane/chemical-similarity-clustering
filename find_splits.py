@@ -261,5 +261,12 @@ def staszek_splits(similarity_matrix_file, all_compounds_file, folder_with_pairs
 
 
 if __name__ == "__main__":
-    print agnieszka_splits('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
-    print staszek_splits('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
+    import sys
+    assert len(sys.argv) > 1, 'Please provide `agnieszka` to run agnieszka_splits and `staszek` to run staszek_splits'
+    if sys.argv[1] == 'agnieszka':
+        print agnieszka_splits('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
+    elif sys.argv[1] == 'staszek':
+        print staszek_splits('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
+    else:
+        print 'Please provide `agnieszka` to run agnieszka_splits and `staszek` to run staszek_splits'
+
