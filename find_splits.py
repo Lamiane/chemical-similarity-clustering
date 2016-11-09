@@ -99,7 +99,7 @@ def agnieszka_splits(similarity_matrix_file, all_compounds_file, folder_with_pai
             pairs = zip(bin_sim.nonzero()[0], bin_sim.nonzero()[1])
 
             random.shuffle(pairs)
-            folds = [{possible_compounds: list(mapping_idx_chembl.keys()), pairs_contained: []} for i in xrange(2)]
+            folds = [{possible_compounds: list(mapping_idx_chembl.keys()), pairs_contained: []} for _ in xrange(2)]
             folds[0][probability], folds[1][probability] = (0.0, 0.9), (0.9, 1.0)
             failures = 0
             max_failures = len(pairs)
@@ -269,4 +269,3 @@ if __name__ == "__main__":
         print staszek_splits('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
     else:
         print 'Please provide `agnieszka` to run agnieszka_splits and `staszek` to run staszek_splits'
-
