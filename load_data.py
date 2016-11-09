@@ -78,9 +78,56 @@ def get_all_files(path):
             if os.path.isfile(os.path.join(path, filename))]
 
 
+def find_non_unique_pairs(dict_idx_chemblchembl, file_numbers=False):
+    """
+    Find all non-unique pairs in data.
+
+    Parameters
+    ----------
+    dict_idx_chemblchembl: dict
+        d[number_from_file_name] = (chembl_1, chembl_2)
+
+    file_numbers: True or False
+        should d[file_number_1] = [file_number_2, file_number_3, ...],\
+         where file_number_[123] contain same pair, be returned?
+
+    Returns
+    -------
+    pairs_to_omit: set
+        numbers from file names of those files which are redundant
+
+    non_unique: dict
+        d[file_number_1] = [file_number_2, file_number_3, ...], only if file_numbers is set to True
+    """
+    non_unique = {}
+    # file_numbers = []
+    for key in sorted(dict_idx_chemblchembl.keys()):
+        chembl_i, chembl_j = dict_idx_chemblchembl[key]
+        for another_key in sorted(dict_idx_chemblchembl.keys()):
+            if key != another_key \
+                    and chembl_i in dict_idx_chemblchembl[another_key]\
+                    and chembl_j in dict_idx_chemblchembl[another_key]:
+                # file_numbers.append((chembl_i, chembl_j))
+                new_key = min(key, another_key)
+                new_value = max(key, another_key)
+                if new_key not in non_unique.keys():
+                    non_unique[new_key] = [new_value]
+                else:
+                    if non_unique[new_key] is None:
+                        print non_unique
+                    non_unique[new_key].append(new_value)
+    pairs_to_omit = set([item for sublist in non_unique.values() for item in sublist])
+    if file_numbers:
+        for key in non_unique.keys():
+            non_unique[key] = set(non_unique[key])
+        return pairs_to_omit, non_unique
+    else:
+        return pairs_to_omit
+
+
 def load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_with_pairs):
     """
-    Loading similarity matrices
+    Load similarity matrices
 
     Parameters
     ----------
@@ -120,27 +167,8 @@ def load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_
     # # # ensure all pairs are unique # # #
     #######################################
     # TODO: now repeats are removed but maybe an average score should be derived?
-    non_unique = {}
-    for key in sorted(dict_idx_chemblchembl.keys()):
-        chembl_i, chembl_j = dict_idx_chemblchembl[key]
-        for another_key in sorted(dict_idx_chemblchembl.keys()):
-            if key != another_key \
-                    and chembl_i in dict_idx_chemblchembl[another_key]\
-                    and chembl_j in dict_idx_chemblchembl[another_key]:
-                new_key = min(key, another_key)
-                new_value = max(key, another_key)
-                if new_key not in non_unique.keys():
-                    non_unique[new_key] = [new_value]
-                else:
-                    if non_unique[new_key] is None:
-                        print non_unique
-                    non_unique[new_key].append(new_value)
-    pairs_to_omit = set([item for sublist in non_unique.values() for item in sublist])
-
+    pairs_to_omit = find_non_unique_pairs(dict_idx_chemblchembl)
     print len(pairs_to_omit), 'pairs were omitted'
-    ###################
-    # # # ensured # # #
-    ###################
 
     n_omitted = 0
     with open(similarity_matrix_file, 'r') as csvfile:
