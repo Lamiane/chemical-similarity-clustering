@@ -1,8 +1,8 @@
-from load_data import load_similarity_matrices
+from load_constraints import load_similarity_matrices
 import matplotlib.pyplot as plt
 import numpy as np
 import collections
-from load_data import find_non_unique_pairs, get_chembls, get_all_files
+from load_constraints import find_non_unique_pairs, get_chembls, get_all_files
 from pandas import DataFrame
 import itertools
 import matplotlib as mpl
