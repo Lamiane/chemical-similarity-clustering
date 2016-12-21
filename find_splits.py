@@ -9,7 +9,7 @@ import scipy.sparse
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-import load_data
+import load_constraints
 
 """
 some constants useful throughout the project
@@ -24,6 +24,7 @@ size = 'size'
 
 
 def split_loss(folds, n_omitted):
+    # TODO docs
     """
     Loading similarity matrices
 
@@ -48,6 +49,7 @@ def split_loss(folds, n_omitted):
     # we need low variance and small number of pairs that were not included
     assert isinstance(folds, list), 'folds should be a non-empty list of dictionaries'
     assert len(folds) > 0, 'folds should be a non-empty list of dictionaries'
+    # TODO wanna remake the assert below: for f in folds isinstance(f, dict)
     assert isinstance(folds[0], dict), 'folds should be a non-empty list of dictionaries'
     variance = 0
     if pairs_contained in folds[0].keys():
@@ -93,11 +95,15 @@ def agnieszka_splits(similarity_matrix_file, all_compounds_file, folder_with_pai
     n_ommited_pairs = []
     try:
         while True:  # many times
+            # TODO: inicjalizacja zmiennych moze tylko raz?
             bin_sim, _, mapping_idx_chembl = \
-                load_data.load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_with_pairs)
+                load_constraints.load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_with_pairs)
             bin_sim.setdiag(np.zeros((bin_sim.shape[0])))  # pairs (i,i) are not interesting for us
+            # TODO ad msc.1. pairs = [p for p in pairs if p[0]<p[1]
+            # TODO cd. wtedy nawet diagonali nie trzeba zerowac, bo ostry warunek
             pairs = zip(bin_sim.nonzero()[0], bin_sim.nonzero()[1])
 
+            # note do TODO: shuffle powinnien byc wykonywany przy kazdym obiedu petli
             random.shuffle(pairs)
             folds = [{possible_compounds: list(mapping_idx_chembl.keys()), pairs_contained: []} for _ in xrange(2)]
             folds[0][probability], folds[1][probability] = (0.0, 0.9), (0.9, 1.0)
@@ -106,6 +112,7 @@ def agnieszka_splits(similarity_matrix_file, all_compounds_file, folder_with_pai
             try:
                 while failures < max_failures:
                     i, j = pairs.pop()  # popping random pair
+                    # msc.1.
                     if i > j:
                         continue  # saving time
 
@@ -126,8 +133,9 @@ def agnieszka_splits(similarity_matrix_file, all_compounds_file, folder_with_pai
                                 fold[possible_compounds].extend([i, j])
                             else:  # the fold was chosen but we cannot fit the pair there
                                 failures += 1
+                                # TODO: dlaczego na poczatku? przeciez to moze potencjalnie blokowac...
                                 pairs.insert(0, (i, j))  # pair goes back to the poll
-                            break  # we've found the chosen one
+                            break  # we've found the fold chosen for this pair
 
             except IndexError:  # pairs is empty
                 print 'index error'
@@ -197,17 +205,21 @@ def staszek_splits(similarity_matrix_file, all_compounds_file, folder_with_pairs
 
     try:
         while True:  # many times
+            # TODO inicjalizacja moze byc przed forem
             bin_sim, _, mapping_idx_chembl = \
-                load_data.load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_with_pairs)
+                load_constraints.load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_with_pairs)
             bin_sim.setdiag(np.zeros((bin_sim.shape[0])))  # pairs (i,i) are not interesting for us
+            # TODO ad msc.2. paris = [p for p in pairs if p[0] < p[1] ]
             pairs = zip(bin_sim.nonzero()[0], bin_sim.nonzero()[1])
 
+            # ad TODO shuffle musi byc w forze
             random.shuffle(pairs)
             folds = [{compounds_contained: [], size:0} for i in xrange(2)]
             folds[0][probability], folds[1][probability] = (0.0, 0.9), (0.9, 1.0)
 
             omitted_pairs = 0
 
+            # TODO tu chyba nie powinno byc len od pairs tylko od numerow compoundow
             for compound_index in xrange(0, len(pairs)):
                 x = np.random.rand()
                 for fold in folds:  # iterating over folds to find the chosen one
@@ -216,6 +228,7 @@ def staszek_splits(similarity_matrix_file, all_compounds_file, folder_with_pairs
 
             for pair in pairs:
                 i, j = pair
+                # msc.2.
                 if i > j:
                     continue  # saving time
 
