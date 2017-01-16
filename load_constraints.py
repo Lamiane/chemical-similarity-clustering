@@ -216,6 +216,10 @@ def load_similarity_matrices(similarity_matrix_file, all_compounds_file, folder_
     return bin_similarity, scale_similarity, mapping_idx_chembl
 
 
+def load_sabina(path):
+    from pandas import DataFrame
+    df = DataFrame.from_csv(path)
+
 if __name__ == '__main__':
     bin_sim, scale_sim, mapping_idx_chembl = \
         load_similarity_matrices('Similarity.csv', 'Random_compounds_100.sdf', 'pairs')
