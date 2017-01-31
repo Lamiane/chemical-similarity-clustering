@@ -1,13 +1,10 @@
-from chesicl.data_loading.load_constraints import load_similarity_matrices
 import matplotlib.pyplot as plt
 import numpy as np
 import collections
-from chesicl.data_loading.load_constraints import find_non_unique_pairs, get_chembls, get_all_files
 from pandas import DataFrame
 import itertools
 import matplotlib as mpl
-
-# TODO: nazwy! komentarze! coz za nieporzadek!
+from chesicl.data_loading.load_constraints import find_non_unique_pairs, get_chembls, get_all_files, load_similarity_matrices
 
 # These are "Tableau 20" colours in  RGB
 tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
