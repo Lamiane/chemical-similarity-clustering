@@ -1,6 +1,7 @@
 # imports
 import os
 import numpy as np
+import cPickle as pkl
 from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_estimator
@@ -22,8 +23,17 @@ chembl21db = os.path.join(data_folder, 'DRGMUM/chembl_21.db')
 chembl_ids_file = os.path.join(data_folder, 'SCFP/Random_compounds_100.sdf')
 similarity_matrix_file = os.path.join(data_folder, 'SCFP/Similarity150Dawid.csv')
 folder_with_pairs = os.path.join(data_folder, 'SCFP/pairs')
+calculated_data = "666experiment_data_doNOTremove4832.pkl"
 
 def load_data():
+    # maybe the data can be load from disk
+    # TODO: what would happen in case of multiple threads?...
+    data_file_path = os.path.join(data_folder, calculated_data)
+    if os.path.isfile(data_file_path):
+        with open(data_file_path, 'r') as f:
+            X, y_train, y_test = pkl.load(f)
+        return X, y_train, y_test
+        
     # load data
 
     # 1. load chembl IDs
@@ -60,5 +70,8 @@ def load_data():
 
     # 7. just for convenience
     X = sprase_fp.toarray()
+    
+    with open(data_file_path, 'w') as f:
+        pkl.dump((X, y_train, y_test), f)
 
-    return X, y_train
+    return X, y_train, y_test
