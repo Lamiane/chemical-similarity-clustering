@@ -2,7 +2,7 @@ import os
 import numpy as np
 from drgmum.toolkit.job_pool import JobPool, dict_hash
 from drgmum.toolkit import burrito
-from scorer import my_binary_score
+from scorer import balanced_accuracy
 
 debug = False
 
@@ -16,17 +16,17 @@ def runner(script_name, script_params, **kwargs):
     from drgmum.toolkit.utils import exec_command
     _, stderr, ret = exec_command(cmd, flush_stdout=False, flush_stderr=False)
     if ret != 0:
-        raise RuntimeError("Failed running cmd")
+        raise RuntimeError("Failed running cmd: "+str(cmd))
 
         
 
 # config
 output_data_dir = "../.."
 scripts_dir = "/home/pocha/chemical-similarity-clustering/chesicl/experiment"
-scoring_function = my_binary_score  # used in each file definig cv_iteration
+scoring_function = balanced_accuracy  # used in each file definig cv_iteration
 max_clusters = 100
 n_clusters = list(range(1, max_clusters+1))
-# let's not use mahalanobis nor seuclidean at all, it requires tuning
+# let's not use mahalanobis nor seuclidean at all as it requires tuning
 metrics_space =  ['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan'] + ['braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski', 'matching', 'minkowski', 'rogerstanimoto', 'russellrao', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']
 
 if __name__=="__main__":
@@ -41,9 +41,9 @@ if __name__=="__main__":
         kmeans_hiperparameters = kmeans_hiperparameters[:3]
         print 'only three hiperparameters sets'
     # run jobs
-    kmeans_job_pool = JobPool(n_jobs=10, output_dir=os.path.join(output_data_dir, 'KMEANS'))
+    kmeans_job_pool = JobPool(n_jobs=10, output_dir=os.path.join(output_data_dir, 'KMEANS_BA'))
     kmeans_jobs = [{"script_name": os.path.join(scripts_dir, "kmeans_cv_iteration.py"), "script_params": h} for h in kmeans_hiperparameters]
-    kmeans_keys = [str(j["script_params"]) for j in kmeans_jobs]
+    kmeans_keys = [str(j["script_params"]).replace("{",'').replace("}",'') for j in kmeans_jobs]
     kmeans_job_pool.map(runner, kmeans_jobs, kmeans_keys)
 
 
@@ -109,7 +109,7 @@ if __name__=="__main__":
         dbscan_hiperparameters = dbscan_hiperparameters[:5]
         print 'only three hiperparameters sets'
     # run jobs
-    dbscan_job_pool = JobPool(n_jobs=10, output_dir=os.path.join(output_data_dir, 'DBSCAN'))
+    dbscan_job_pool = JobPool(n_jobs=10, output_dir=os.path.join(output_data_dir, 'DBSCAN_BA'))
     dbscan_jobs = [{"script_name": os.path.join(scripts_dir, "dbscan_cv_iteration.py"), "script_params": h} for h in dbscan_hiperparameters]
     dbscan_keys = [str(j["script_params"]) for j in dbscan_jobs]
     dbscan_job_pool.map(runner, dbscan_jobs, dbscan_keys)
