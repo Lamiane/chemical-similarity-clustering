@@ -7,11 +7,20 @@ import numpy as np
 import os
 import logging
 logging.basicConfig()
-
 from drgmum.toolkit import burrito
-
 from chesicl.data_loading.exp_data_loader import load_data
-from experiment import scoring_function
+
+from CONFIG import scoring_function
+
+def get_hparams(max_clusters):
+    n_clusters = list(range(1, max_clusters+1))
+    init =['k-means++', 'random']
+    algorithm = ['full', 'elkan']
+    
+    kmeans_hiperparameters = [{'n_clusters':nc, 'init':init_, 'algorithm':alg, 'n_init':1, 'max_iter':300, 'n_jobs':1} 
+                       for nc in n_clusters for init_ in init for alg in algorithm]
+    
+    return kmeans_hiperparameters
 
 # default parameters are must-be!
 def cv_iteration(n_clusters=1, n_init=1, init='random', algorithm='elkan', max_iter=300, n_jobs=1):
