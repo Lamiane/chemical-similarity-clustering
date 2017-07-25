@@ -30,15 +30,15 @@ def balanced_accuracy(labels_true, labels_pred):
     n_classes = 2
     arr = np.zeros((n_classes, n_classes))
     for ((idx_1, idx_2), sim_true) in labels_true:
-        print ((idx_1, idx_2), sim_true)
-        print _scale(sim_true)
+        # print ((idx_1, idx_2), sim_true)
+        # print _scale(sim_true)
         if labels_pred[idx_1] == labels_pred[idx_2]:
             arr[_scale(sim_true), 1] += 1.
-            print 'a'
+            # print 'a'
         else:
             arr[_scale(sim_true), 0] += 1.
-            print 'b'
-        print '\n'
+            # print 'b'
+        # print '\n'
     
     cumulative_sum = 0.
     for c in range(n_classes):

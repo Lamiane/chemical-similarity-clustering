@@ -31,7 +31,7 @@ if __name__=="__main__":
     for script_name, hpars, res_dir in zip(CONFIG.scripts_names, CONFIG.hparams, CONFIG.result_folders):
         job_pool = JobPool(n_jobs=CONFIG.n_jobs, output_dir=os.path.join(CONFIG.output_data_dir, res_dir))
         jobs = [{"script_name": os.path.join(CONFIG.scripts_dir, script_name), "script_params": h} for h in hpars]
-        keys = [str(j["script_params"]).replace("{",'').replace("}",'') for j in jobs]
+        keys = [str(i) for i in range(len(jobs))]
         job_pool.map(runner, jobs, keys)
 
 
