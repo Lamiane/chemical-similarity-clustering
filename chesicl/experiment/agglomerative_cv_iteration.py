@@ -28,14 +28,21 @@ def get_hparams(max_clusters):
 def cv_iteration(n_clusters=1, affinity='euclidean', linkage='ward'):
     X, y_train, _ = load_data()
     scores = []
+    cms = []  # confusion matrices
+    cluster_sizes = []
     random_states = (666, 69, 7, 13, 1337)
     for i in random_states:
         model = AgglomerativeClustering(n_clusters=n_clusters, affinity=affinity, linkage=linkage)
         predictions = model.fit_predict(X)
-        scores.append(scoring_function(y_train, predictions))
+        score, confusion_matrix = scoring_function(y_train, predictions)
+        scores.append(score)
+        cms.append(serialise_confusion_matrix(confusion_matrix))
+        cluster_sizes.append(serialise_confusion_matrix(np.unique(predictions, return_counts=True)))
+                  
     return {'result': scores,
-           # 'confusion': serialise_confusion_matrix(confusion_matrix(y_train, predictions)),
-           'score_name': string_enhancer(str(scoring_function))}
+           'confusion_matrices': eval(str(cms)),
+           'score_name': string_enhancer(str(scoring_function)),
+           'cluster_sizes': eval(str(cluster_sizes))}
 
 if __name__ == "__main__":
     burrito.print_as_json(burrito.wrap(cv_iteration, save_results=True))

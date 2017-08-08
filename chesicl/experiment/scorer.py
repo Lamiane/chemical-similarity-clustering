@@ -46,10 +46,10 @@ def balanced_accuracy(labels_true, labels_pred):
         denominator = np.sum(arr[c, :])
         # ponizsza linijka sie nie wysypie o ile w kazdej klasie jest co najmniej jeden przyklad
         cumulative_sum += (numerator/denominator)
-    print arr
+    # print arr
     cumulative_sum = cumulative_sum/n_classes
                    
-    return cumulative_sum
+    return cumulative_sum, arr
             
         
         

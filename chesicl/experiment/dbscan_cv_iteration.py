@@ -8,7 +8,7 @@ import numpy as np
 import os
 import logging
 logging.basicConfig()
-from drgmum.toolkit import burrito
+from chesicl.toolkit import burrito
 from chesicl.data_loading.exp_data_loader import load_data
 from chesicl.experiment.utils import string_enhancer, serialise_confusion_matrix
 from CONFIG import scoring_function
@@ -84,12 +84,18 @@ def get_hparams():
 def cv_iteration(n_jobs=2, eps=1., min_samples=30, metric='euclidean', algorithm='brute', leaf_size=30, p=2.):
     X, y_train, _ = load_data()
     scores = []
+    cms = []  # confusion matrices
+    cluster_sizes = []
     model = DBSCAN(n_jobs=n_jobs, eps=eps, min_samples=min_samples, metric=metric, algorithm=algorithm, leaf_size=leaf_size, p=p)
     predictions = model.fit_predict(X)
-    scores.append(scoring_function(y_train, predictions))
+    score, confusion_matrix = scoring_function(y_train, predictions)
+    scores.append(score)
+    cms.append(serialise_confusion_matrix(confusion_matrix))
+    cluster_sizes.append(serialise_confusion_matrix(np.unique(predictions, return_counts=True)))
     return {'result': scores,
-            # 'confusion': serialise_confusion_matrix(confusion_matrix(y_train, predictions)),
-            'score_name': string_enhancer(str(scoring_function))}
+           'confusion_matrices': eval(str(cms)),
+           'score_name': string_enhancer(str(scoring_function)),
+           'cluster_sizes': eval(str(cluster_sizes))}
 
 if __name__ == "__main__":
      burrito.print_as_json(burrito.wrap(cv_iteration, save_results=True))
