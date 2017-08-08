@@ -75,3 +75,9 @@ def load_data():
         pkl.dump((X, y_train, y_test), f)
 
     return X, y_train, y_test
+
+
+def load_data_random_labels(seed):
+    X, y_train, y_test = load_data()
+    np.random.seed(seed)
+    return X, np.random.shuffle(y_train), np.random.shuffle(y_test)
